@@ -72,22 +72,42 @@ export default {
   },
   methods: {
     login () {
-      //  this.$refs.loginForm 获取的就是el-form的对象实例
-      this.$refs.loginForm.validate().then(() => {
-        // 如果成功通过 校验就会到达 then
-        console.log('校验通过')
-      })
-      //  回调函数 isOK, fields(没有校验通过的字段)
+      //    this.$refs.loginForm 获取的就是el-form的对象实例
+      // 第一种 回调函数 isOK, fields(没有校验通过的字段)
       // this.$refs.loginForm.validate(function (isOK) {
       //   if (isOK) {
       //     console.log('校验通过')
       //   } else {
       //     console.log('校验未通过')
       //   }
-      // }) // 第二种方法
+      // }) // 方法
+      // 第二种方式 promise
+      this.$refs.loginForm.validate().then(() => {
+        // 如果成功通过 校验就会到达 then
+        // 通过校验之后 应该做什么事 -> 应该调用登录接口 看看手机号是否正常
+        //   this.$axios.get/post/delete/put
+        this.$axios({
+          url: '/authorizations', // 请求地址
+          data: this.loginForm,
+          // data: { ...this.loginForm, checked: null }, // body请求体参数
+          method: 'post'
+        }).then(result => {
+          // 成功 之后打印结果
+          // 把钥匙放在兜里 也就是把token存于 本地缓存
+          window.localStorage.setItem('user-token', result.data.data.token)
+          // 跳转到主页
+          this.$router.push('/') // push 和 router-link类似 to属性 可以直接是字符串 也可以是对象
+        }).catch(() => {
+          // 提示消息
+          // 第一种用法
+          // this.$message({ message: '用户名或者密码错误', type: 'error' })
+          this.$message.error('用户名或者密码错误')
+        })
+      })
     }
   }
 }
+
 </script>
 
 <style lang='less' scoped>
